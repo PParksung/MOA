@@ -35,4 +35,6 @@ frontend/dist/
 # IDE
 .idea/
 *.iml
-EOFdescription for develop/
+
+# 참고자료 (로컬 전용)
+description for develop/
