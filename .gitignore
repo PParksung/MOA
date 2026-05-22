@@ -36,5 +36,6 @@ frontend/dist/
 .idea/
 *.iml
 
-# 참고자료 (로컬 전용)
+# 참고자료 및 로컬 전용 문서
 description for develop/
+CLAUDE.md
