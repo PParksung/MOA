@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: ai-server
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/moa_security?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+    show-sql: false
+
+server:
+  port: 8084
+
+llm:
+  api-key: ${LLM_API_KEY}
+  api-url: ${LLM_API_URL}

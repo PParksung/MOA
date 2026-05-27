@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: exchange-server
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: 6379
+
+server:
+  port: 8081
