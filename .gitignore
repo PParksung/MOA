@@ -32,10 +32,25 @@ application-secret.yml
 node_modules/
 frontend/dist/
 
+# Gradle
+build/
+.gradle/
+
 # IDE
 .idea/
 *.iml
+bin/
 
 # 참고자료 및 로컬 전용 문서
 description for develop/
 CLAUDE.md
+
+# 프로젝트 기록용 블로그
+for history/
+for tistory/
+
+# 로컬 개발 도구
+.claude/
+
+# 로컬 전용 이미지
+시스템 아키텍처.png
