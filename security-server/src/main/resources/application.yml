@@ -17,6 +17,10 @@ spring:
         format_sql: true
     show-sql: false
 
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -30,9 +34,9 @@ jwt:
   access-expiration: 300000      # 5분 (ms)
   refresh-expiration: 604800000  # 7일 (ms)
 
+# AES-256-GCM: IV(nonce)는 암호화할 때마다 랜덤 생성해 암호문에 포함하므로 고정 IV 설정을 두지 않는다
 aes:
   key: ${AES_KEY}
-  iv: ${AES_IV}
 
 exchange:
   server-url: ${EXCHANGE_SERVER_URL:http://localhost:8081}
