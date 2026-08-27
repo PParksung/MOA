@@ -75,7 +75,8 @@ CREATE TABLE cash_wallet (
     updated_at   DATETIME(6)  NOT NULL,
     PRIMARY KEY (id),
     CONSTRAINT uk_cash_wallet_user UNIQUE (user_id),
-    CONSTRAINT fk_cash_wallet_user FOREIGN KEY (user_id) REFERENCES users (id)
+    CONSTRAINT fk_cash_wallet_user FOREIGN KEY (user_id) REFERENCES users (id),
+    CONSTRAINT chk_cash_wallet_tied CHECK (tied_balance <= balance)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 
 -- 현금 거래 내역
