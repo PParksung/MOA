@@ -374,8 +374,9 @@
       <a href="#market">실시간 시세</a>
       <a href="#order">주문 / 체결</a>
       <a href="#orderbook">오더북</a>
-      <a href="#ai">AI 투자 패턴 분석</a>
+      <a href="#ai">투자 규칙 + AI 피드백</a>
       <a href="#portfolio-feat">포트폴리오</a>
+      <a href="#excluded">고려하지 않는 것</a>
     </nav>
 
     <div class="sidebar-section">데이터베이스</div>
@@ -425,13 +426,13 @@
       <h2>프로젝트 소개</h2>
       <p>
         <strong>MOA</strong>(Mock Onboarding to Assets)는 실제 한국투자증권(KIS) 시세를 바탕으로
-        100만원 가상 자금을 가지고 주식 투자를 연습할 수 있는 모의투자 플랫폼이다.
-        <strong>AI가 사용자의 거래 패턴을 분석해 피드백을 제공</strong>하는 것이 핵심 차별점이다.
+        1,000만원 가상 자금을 가지고 주식 투자를 연습할 수 있는 모의투자 플랫폼이다.
+        <strong>나만의 투자 규칙을 정하고, AI가 규칙 준수 여부와 투자 습관을 리포트로 피드백</strong>하는 것이 핵심 차별점이다.
       </p>
       <div class="stat-grid">
         <div class="stat-card">
           <div class="label">초기 자산</div>
-          <div class="value">100만원 자동 지급</div>
+          <div class="value">1,000만원 자동 지급</div>
         </div>
         <div class="stat-card">
           <div class="label">진입 장벽</div>
@@ -443,7 +444,7 @@
         </div>
         <div class="stat-card">
           <div class="label">AI 피드백</div>
-          <div class="value">LLM 기반 리포트</div>
+          <div class="value">규칙 준수 + 습관 리포트</div>
         </div>
       </div>
     </section>
@@ -461,13 +462,14 @@
 
       <h3>해결책</h3>
       <ul>
-        <li>이메일만으로 즉시 가입, <code>100만원</code> 가상 자금 자동 지급</li>
-        <li>입문자 친화적 심플 UI</li>
-        <li><strong>AI가 내 투자 패턴을 분석해 피드백 제공</strong> <span class="tag purple">핵심 차별점</span></li>
+        <li>이메일만으로 즉시 가입, <code>1,000만원</code> 가상 자금 자동 지급</li>
+        <li>입문자 친화적 심플 UI — 단, 차트·호가창·보조지표는 실제 증권앱 수준으로</li>
+        <li><strong>나만의 투자 규칙을 정하고, AI가 규칙 준수 여부와 투자 습관을 리포트로 피드백</strong> <span class="tag purple">핵심 차별점</span></li>
+        <li>수수료·세금·기업 분석·주가 예측은 의도적으로 제외 (<a href="#excluded">고려하지 않는 것</a>)</li>
       </ul>
 
       <div class="callout info">
-        <strong>왜 100만원인가?</strong> 실제 입문자가 처음 투자할 때 넣는 현실적인 금액이자, 다양한 종목을 경험하기에 충분한 금액. 자산 리셋은 <code>1주일에 1회</code>로 제한해 현실감 유지.
+        <strong>왜 1,000만원인가?</strong> 100만원이면 대형주 몇 주밖에 못 사 분산·리밸런싱 연습이 안 된다 (금융권 지인 피드백: 최소 1,000만원). 자산 리셋은 투자 성향에 따라 <code>단타 주 1회</code> / <code>장투 3개월 1회</code>로 제한해 현실감 유지.
       </div>
     </section>
 
@@ -767,17 +769,17 @@
             <tr>
               <td><strong>exchange-server</strong> <span class="tag red">내부 전용</span></td>
               <td><code>8081</code></td>
-              <td>체결 엔진. security-server만 호출 가능. 외부 미노출. 24시간 운영.</td>
+              <td>체결 엔진. 실제 호가 잔량 기준 가상 체결 + 미체결 주문 대기열. security-server만 호출 가능. 외부 미노출.</td>
             </tr>
             <tr>
               <td><strong>market-server</strong></td>
               <td><code>8083</code></td>
-              <td>KIS WebSocket 실시간 시세, 종목/등락률, 장중·장외 상태, 시세 Redis 캐싱.</td>
+              <td>KIS WebSocket 실시간 시세 + 호가 10단계, 종목/등락률, 보조지표 계산 API, 장중·장외 상태, 시세 Redis 캐싱.</td>
             </tr>
             <tr>
               <td><strong>ai-server</strong></td>
               <td><code>8084</code></td>
-              <td>거래 패턴 분석, LLM 피드백 리포트 생성, 이상거래 탐지.</td>
+              <td>투자 규칙 준수 체크, 습관 수치 계산, LLM 총평 생성, 이상거래 탐지.</td>
             </tr>
             <tr>
               <td>frontend</td>
@@ -846,10 +848,10 @@
       <h2>사용자 인증</h2>
       <ul>
         <li>회원가입: 이메일 + 비밀번호 (<code>BCrypt</code> 해싱) <span class="tag red">SHA-512에서 변경</span></li>
-        <li>가입 시 현금 계좌 자동 개설 + <strong>100만원 자동 지급</strong></li>
+        <li>가입 시 현금 계좌 자동 개설 + <strong>1,000만원 자동 지급</strong>, 투자 성향(단타 / 장투) 선택</li>
         <li>로그인 → JWT 발급 (<code>access 5분</code> / <code>refresh 1주일</code>)</li>
         <li>토큰 재발급: <strong>Refresh Token Rotation</strong> — 재발급 시 refresh token도 새로 발급, 이전 토큰 재사용 감지 시 해당 유저 토큰 전체 무효화 (탈취 대응)</li>
-        <li>자산 리셋: 잔액 부족 시 100만원으로 초기화 가능 (<code>1주일에 1회</code> 제한)</li>
+        <li>자산 리셋: 1,000만원으로 초기화. 성향별 제한 — <code>단타 1주일에 1회</code> / <code>장투 3개월에 1회</code></li>
       </ul>
       <div class="callout">
         <strong>왜 SHA-512 → BCrypt인가?</strong> SHA-512는 빠르게 계산되도록 설계된 범용 해시라 GPU 브루트포스에 취약하다.
@@ -857,7 +859,7 @@
         Spring Security의 <code>BCryptPasswordEncoder</code>를 사용한다. salt 자동 포함 + work factor 조절 가능.
       </div>
       <div class="callout">
-        완전 무제한 리셋은 투자 의미가 없어지므로 제한을 둠. 1주일 동안은 현실처럼 신중하게 투자하도록 유도.
+        완전 무제한 리셋은 투자 의미가 없어지므로 제한을 둠. 리셋 주기 동안은 현실처럼 신중하게 투자하도록 유도. 단타와 장투는 한 사이클 길이가 다르므로 주기를 분리.
       </div>
     </section>
 
@@ -890,11 +892,20 @@
     <section id="market">
       <h2>실시간 시세 (KIS API)</h2>
       <ul>
-        <li><strong>장중</strong> (평일 09:00~15:30): KIS WebSocket 실시간 시세</li>
-        <li><strong>장외</strong>: 마지막 종가 유지</li>
+        <li><strong>장중</strong> (평일 09:00~15:30): KIS WebSocket 실시간 시세 + <strong>호가 10단계</strong>(가격·잔량)</li>
+        <li><strong>장외</strong>: 마지막 종가 유지, 호가 없음 (체결 불가)</li>
         <li>종목 목록 + 현재가 + 등락률 제공</li>
         <li>시세 Redis 캐싱</li>
       </ul>
+      <h3>차트 · 호가창 · 보조지표</h3>
+      <ul>
+        <li><strong>호가창</strong>: 실제 KIS 호가 10단계를 그대로 표시 — 체결 기준과 같은 데이터</li>
+        <li><strong>차트</strong>: 캔들 + 거래량을 <code>lightweight-charts</code>로 렌더링</li>
+        <li><strong>보조지표</strong>: 이동평균선, MACD, 거래량 — market-server가 계산해 API로 제공, 프론트는 오버레이만</li>
+      </ul>
+      <div class="callout">
+        원칙: <strong>지표 계산 로직은 서버, 그리기는 라이브러리.</strong> 백엔드 포트폴리오가 프론트 프로젝트로 변질되지 않게.
+      </div>
     </section>
 
     <!-- ORDER -->
@@ -904,14 +915,23 @@
         <li>매수 / 매도 주문 접수</li>
         <li><strong>호가 단위 검증</strong> (가격 구간별)</li>
         <li><strong>상하한가 검증</strong> (<code>±5%</code>)</li>
-        <li>다자간 상대매매 (동일 가격 FIFO 체결)</li>
+        <li><strong>실제 호가 잔량 기준 가상 체결</strong>: 매수 지정가 ≥ 실제 매도1호가(매도는 반대)면 체결, 실제 잔량 초과분은 부분 체결 후 대기. 같은 가격의 유저 주문끼리는 FIFO</li>
+        <li>1차는 지정가 주문만. 시장가는 이후</li>
         <li>미체결 주문 조회 / 체결 내역 조회 / 주문 취소</li>
       </ul>
+      <div class="callout info">
+        <strong>왜 유저간 상대매매가 아닌가?</strong> 모의투자는 주문이 실제 시장에 나가지 않으므로 상대방이 필요하다.
+        유저끼리 매칭하면 유저가 적을 때 반대 주문이 없어 영원히 미체결이고, 체결돼도 실제 시세와 괴리된다.
+        그래서 <strong>실제 시장의 호가와 잔량을 상대방으로 삼는다</strong> — 그 순간 실제로 주문했다면 받았을 결과와 같다.
+        대형주는 잔량이 커서 사실상 즉시 전량 체결되고(1,000만원 규모는 실제 시장에서도 영향 없음),
+        소형주는 잔량만큼만 체결돼 슬리피지·부분 체결을 자연스럽게 경험한다.
+      </div>
     </section>
 
     <!-- ORDERBOOK -->
     <section id="orderbook">
-      <h2>오더북 (Redis)</h2>
+      <h2>오더북 (Redis) — 미체결 주문 대기열</h2>
+      <p class="muted">유저들의 미체결 지정가 주문을 가격순으로 보관하고, market-server의 호가 갱신 때 지정가에 도달한 주문을 찾아 실제 잔량 범위 안에서 체결한다.</p>
       <div class="table-wrapper">
         <table>
           <thead><tr><th>키 패턴</th><th>타입</th><th>설명</th></tr></thead>
@@ -955,15 +975,27 @@
 
     <!-- AI -->
     <section id="ai">
-      <h2>AI 투자 패턴 분석 <span class="tag purple">핵심 차별점</span></h2>
+      <h2>투자 규칙 + AI 피드백 <span class="tag purple">핵심 차별점</span></h2>
       <ul>
-        <li>거래 내역 기반 분석: <strong>평균 보유기간 / 승률 / 손절 평균 / 주요 거래 시간대</strong></li>
-        <li>LLM이 패턴 기반 피드백 리포트 자동 생성</li>
+        <li><strong>사용자가 자기 투자 규칙을 정한다</strong> — 예: 손실 -5%면 손절 / 한 종목 비중 30% 이하 / 장 시작 30분 내 매수 금지 / 최소 보유 3일.
+          규칙은 정형 데이터(유형 + 임계값)로 <code>investment_rule</code>에 저장 → 거래마다 자동 대조</li>
+        <li>리포트 구성
+          <ol>
+            <li><strong>규칙 준수표</strong>: 규칙별 지킨 횟수 / 어긴 횟수 / 어긴 거래 목록 (순수 계산)</li>
+            <li><strong>습관 수치</strong>: 평균 보유기간 / 승률 / 손절 평균 / 물타기 횟수 / 시간대별 매수 분포 (순수 계산)</li>
+            <li><strong>AI 총평</strong>: 1·2를 입력으로 한 문단 — 가장 많이 어긴 규칙 하나에 대한 조언 포함</li>
+          </ol>
+        </li>
+        <li>하지 않는 것: 종목 추천, 주가 예측, 기업 재무·뉴스 분석 — 투자 권유가 되고, 데이터 비용·환각 위험</li>
         <li><strong>FDS (이상거래 탐지)</strong> <span class="tag amber">은행권 핵심 키워드</span>:
           룰 기반 탐지(단시간 동일 종목 반복 주문, 자전거래 패턴 등) + LLM 분석 조합</li>
         <li>LLM 호출부는 <code>LlmClient</code> 인터페이스로 추상화 — v1.0 이후
           <a href="#finetuning">파인튜닝 모델 교체 실험</a>에 대비해 구현체(GeminiClient)만 갈아끼울 수 있는 구조로 설계</li>
       </ul>
+      <div class="callout info">
+        <strong>왜 규칙 준수 체크인가?</strong> 초보에게 가장 필요한 건 "나만의 규칙을 세우고 지키는 연습"이라는 금융권 지인 피드백.
+        그리고 규칙 대조는 거래 기록과 규칙의 비교 연산이라 LLM 품질에 기대지 않는다 — 수치가 다 계산된 상태로 들어가므로 무료 티어 LLM으로도 총평 품질이 크게 흔들리지 않는다.
+      </div>
       <div class="callout info">
         <strong>FDS(Fraud Detection System)</strong>는 은행 IT의 핵심 시스템이다.
         이상거래 탐지를 FDS로 브랜딩하면 "모의투자 + FDS 구현 경험"이라는 독특한 조합이 된다.
@@ -977,6 +1009,22 @@
     </section>
 
     <!-- DB OVERVIEW -->
+    <section id="excluded">
+      <h2>고려하지 않는 것 <span class="tag">의도적 제외</span></h2>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>항목</th><th>이유</th></tr></thead>
+          <tbody>
+            <tr><td><strong>수수료 · 세금</strong></td><td>기존 모의투자 서비스 대부분이 반영하지 않는 관행. 초보가 배울 건 0.015% 수수료가 아니라 매매 판단. 필요해지면 체결 시 정률 차감 한 줄로 추가 가능한 구조</td></tr>
+            <tr><td>시장가 주문 (1차)</td><td>지정가 + 호가 잔량 체결로 충분. 시장가는 호가 여러 단계를 순차 소진하는 로직이라 2차</td></tr>
+            <tr><td>기업 재무·뉴스 분석, 주가 예측</td><td>투자 권유가 됨. 데이터 유료, LLM 환각 위험. "예측하지 않고 습관만 본다"가 서비스 정체성</td></tr>
+            <tr><td>주식 외 자산 (채권·현금 비중 추천 등)</td><td>서비스 범위 밖</td></tr>
+            <tr><td>내 주문의 시장 영향</td><td>1,000만원 규모는 실제 시장에서도 영향 없음. 소형주의 비현실성은 호가 잔량 기반 부분 체결로 보완</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
     <section id="db-overview">
       <h2>데이터베이스 스키마 개요</h2>
       <p class="muted">MySQL · security DB. 총 10개 테이블로 사용자/계좌/주문/체결을 관리한다.</p>
@@ -1007,7 +1055,7 @@
         <table>
           <thead><tr><th>테이블</th><th>설명</th></tr></thead>
           <tbody>
-            <tr><td><code>users</code></td><td>사용자 정보 — <code>last_reset_at</code>으로 자산 리셋 1주일 1회 제한 (user는 예약어라 복수형)</td></tr>
+            <tr><td><code>users</code></td><td>사용자 정보 — <code>last_reset_at</code>으로 자산 리셋 주기 제한 (user는 예약어라 복수형). <span class="tag">V2</span> 투자 성향·리셋 주기 컬럼 추가 예정</td></tr>
             <tr><td><code>authentication</code></td><td>refresh token <strong>해시</strong> 저장 — <code>used_at</code>으로 Rotation 재사용 감지. <strong>DB가 원본, Redis는 조회 캐시</strong></td></tr>
             <tr><td><code>stock</code></td><td>종목 정보</td></tr>
             <tr><td><code>market_status</code></td><td>종목별 일자별 장 상태 (기준가, 상하한가, 시가, 종가)</td></tr>
@@ -1017,6 +1065,7 @@
             <tr><td><code>stock_wallet_history</code></td><td>증권 입출고 내역 — <code>quantity_after</code> 스냅샷</td></tr>
             <tr><td><code>orders</code></td><td>주문 — <code>status</code>(PENDING / PARTIAL / FILLED / CANCELLED) + <code>idempotency_key</code> (order는 예약어라 복수형)</td></tr>
             <tr><td><code>matches</code></td><td>체결 내역 — 조회용 buyer/seller user_id 비정규화 반영</td></tr>
+            <tr><td><code>investment_rule</code> <span class="tag">V2</span></td><td>사용자 투자 규칙 (유형 + 임계값). ai-server 규칙 준수 체크의 기준</td></tr>
           </tbody>
         </table>
       </div>
