@@ -39,7 +39,7 @@ class FlywayMigrationTest {
         MigrateResult result = flyway().migrate();
 
         assertThat(result.success).isTrue();
-        assertThat(result.migrationsExecuted).isEqualTo(1);
+        assertThat(result.migrationsExecuted).isGreaterThanOrEqualTo(2); // V1 init, V2 investment_style — 이후 추가돼도 깨지지 않게
 
         try (Connection conn = DriverManager.getConnection(
                 mysql.getJdbcUrl(), mysql.getUsername(), mysql.getPassword())) {
@@ -67,8 +67,8 @@ class FlywayMigrationTest {
         try (Connection conn = DriverManager.getConnection(
                 mysql.getJdbcUrl(), mysql.getUsername(), mysql.getPassword())) {
             conn.createStatement().executeUpdate(
-                    "INSERT INTO users (email, password, created_at, updated_at) " +
-                    "VALUES ('t@t.com', 'x', NOW(6), NOW(6))");
+                    "INSERT INTO users (email, password, investment_style, created_at, updated_at) " +
+                    "VALUES ('t@t.com', 'x', 'SHORT_TERM', NOW(6), NOW(6))");
 
             // tied_balance(20000) > balance(10000) → CHECK 제약 위반이어야 한다
             var thrown = org.assertj.core.api.Assertions.catchThrowable(() ->

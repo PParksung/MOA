@@ -9,6 +9,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
+    open-in-view: false            # 트랜잭션 밖(컨트롤러)에서 지연 로딩 금지 — 커넥션을 요청 내내 붙잡지 않는다
     hibernate:
       ddl-auto: validate
     properties:
@@ -20,6 +21,14 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+
+  web:
+    locale: en                      # 유효성 메시지 등 서버 생성 메시지는 영어로 (API 규칙: message 는 영어)
+    locale-resolver: fixed          # Accept-Language 헤더에 따라 바뀌지 않게 고정
+
+  jackson:
+    property-naming-strategy: SNAKE_CASE   # API 규칙: 요청/응답 필드명 snake_case (DTO 는 camelCase 로 작성)
+    default-property-inclusion: non_null
 
   data:
     redis:
