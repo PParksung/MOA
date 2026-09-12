@@ -46,8 +46,8 @@
 | Database | MySQL 8.4 |
 | Cache | Redis 7 |
 | Auth | JWT (jjwt 0.12.7), BCrypt (비밀번호), AES-256-GCM (계좌번호) |
-| Frontend | React + TypeScript, Tailwind CSS |
-| 실시간 시세 | 한국투자증권(KIS) Open API — 실전투자 App Key 보유. 현재가 + 호가 10단계(가격·잔량) |
+| Frontend | React Native (Expo) + TypeScript + NativeWind. 웹은 react-native-web 빌드 — 앱이 최종 목표라 한 코드베이스로 웹·iOS·Android |
+| 실시간 시세 | `MarketDataProvider` 추상화. 개발·비공개 베타: KIS Open API(개인 키, 본인 목적 한정) / 공개 출시: 코스콤 시세 라이선스 + 오픈API(법인 필요) / 라이선스 전 공개: 공공데이터포털 일별 시세(DAILY 모드). 아래 "시세 데이터 라이선스 & 출시 전략" 참고 |
 | 실시간 푸시 | WebSocket — 시세·체결 알림 (Nginx·Gateway가 WS 프록시) |
 | 메시징 | Kafka — 체결 이벤트 발행/구독 (exchange → ai-server) |
 | AI 분석 | LLM API (규칙 준수표·습관 수치를 입력으로 총평 생성. 예측·추천 없음) |
@@ -124,7 +124,7 @@ Spring Cloud Gateway MVC. 라우팅 규칙:
 
 ### market-server (port 8083)
 실시간 시세 담당:
-- KIS WebSocket 실시간 시세 수신 (현재가 + 호가 10단계 가격·잔량)
+- 시세 수신은 `MarketDataProvider` 인터페이스 뒤에 둔다 (KisProvider / KoscomProvider / PublicDataDailyProvider). 현재가 + 호가 10단계 가격·잔량
 - 종목 목록 + 현재가 + 등락률 제공
 - 호가 갱신을 exchange-server에 전달 (체결 기준) + 프론트 호가창 제공
 - 보조지표 계산 API (이동평균선, MACD, 거래량) — 계산은 서버, 그리기는 프론트 차트 라이브러리(lightweight-charts)
@@ -276,14 +276,55 @@ V2 예정 변경: `users`에 투자 성향(단타/장투)·리셋 주기 컬럼 
 
 ---
 
+## 시세 데이터 라이선스 & 출시 전략
+
+조사 결과 (2026-09, KIS·KRX·코스콤 공식 안내 기준):
+- **KIS Open API 개인 키는 본인 투자 목적 한정. 제3자에게 시세를 표출하는 서비스는 약관 위반.** 제휴법인도 코스콤과 별도 시세정보이용계약이 필요
+- **KRX 시세를 앱·웹에 재배포하려면 코스콤(KRX 시세 배포 대행)과 시세 라이선스 계약**이 필요. 실시간은 이용자당 정보이용료가 붙고, 가격은 비공개(문의: fintechdata@koscom.co.kr / 02-767-7537)
+- **코스콤 오픈API플랫폼은 법인(핀테크 스타트업·중소기업)만 이용 가능.** 개인사업자·일반인·학생 불가
+- **공공데이터포털 "금융위원회_주식시세정보"는 무료·상업 이용 가능(출처 표시).** 단 일 1회 갱신(전 영업일 종가), 실시간·호가 없음
+
+따라서 단계별로 간다. 코드 변경 없이 설정으로 전환되도록 `MarketDataProvider` 로 공급자를 추상화하고, 체결 엔진은 `REALTIME` / `DAILY` 두 모드를 지원한다.
+
+| 단계 | 사용자 | 시세 소스 | 체결 방식 | 필요한 것 |
+|------|--------|----------|----------|----------|
+| A. 개발·포트폴리오·비공개 베타 | 본인 + 초대 테스터 | KIS 개인 키 | REALTIME (호가 잔량 기반) | 없음. 스토어 공개 금지 |
+| B. 공개 출시 (라이선스 전) | 불특정 다수 | 공공데이터포털 일별 시세 | DAILY (다음 영업일 종가로 체결) | 출처 표시. 무료 |
+| C. 실시간 공개 출시 | 불특정 다수 | 코스콤 오픈API | REALTIME | 법인 설립 → 코스콤 시세 라이선스 계약 → KoscomProvider 구현 |
+
+- B 단계에서도 "투자 규칙 + 습관 리포트"라는 핵심 차별점은 그대로 동작한다. 실시간이 아닌 것은 화면에 명시한다
+- 네이버·다음 등 포털 시세 크롤링은 약관 위반이므로 쓰지 않는다
+- A 단계 데이터로 부하 테스트·데모 영상은 만들되, 공개 URL 로 서비스하지 않는다
+
+---
+
+## 앱 출시 전제 API 규약
+
+앱은 업데이트를 강제하기 어려우므로, 한 번 나간 응답 형식은 바꾸지 않는다. 처음부터 아래 규칙으로 만든다.
+
+- 에러 응답: `{ "code": "409", "error": "DUPLICATE_EMAIL", "message": "email already exists" }` — `error` 는 ErrorCode enum 이름(앱이 분기·다국어 처리용), `message` 는 영어 고정
+- 시각: 모든 응답 시각은 ISO-8601 + 오프셋 (`2026-09-12T16:48:56+09:00`). epoch·오프셋 없는 문자열 금지
+- 목록 API: 커서 페이징 `{ "items": [...], "next_cursor": "..." | null }`. offset/page 번호 금지 (무한 스크롤·데이터 삽입 시 중복 방지)
+- 계정: 회원 탈퇴 API 필수 (App Store 5.1.1(v)·Google Play 정책). 원장은 보존하고 개인정보만 익명화(`users.email` → 해시, `deleted_at`)
+- 인증: 로그아웃(현재 기기) + 로그인 기기 목록·개별 로그아웃. `authentication` 에 기기 정보·마지막 사용 시각 (V3)
+- WebSocket: 구독 시 현재 상태 스냅샷을 먼저 보내고 이후 변경분(delta). 앱은 백그라운드에서 끊기므로 재접속만으로 화면이 복구돼야 한다
+- 멱등성: 주문·입출금 등 부작용 있는 POST 는 `Idempotency-Key` 헤더 지원 (모바일 재시도 대비)
+- 문서: springdoc OpenAPI 로 스펙 자동 생성. 앱 클라이언트 코드 생성에 사용
+- 소셜 로그인은 넣지 않는다. 하나라도 넣으면 App Store 가 Apple 로그인을 강제한다
+- 비밀번호 재설정(이메일), 개인정보처리방침·투자 권유 아님 고지는 v1.0 출시 전 필수
+- FCM 푸시(체결 알림)는 Kafka 체결 이벤트를 WebSocket 과 함께 구독하는 알림 컨슈머로 추가
+
+---
+
 ## API 규칙
 
 - 모든 요청/응답 Body: JSON, 필드명 snake_case
 - 인증 필요 API: `Authorization: Bearer {access_token}` 헤더
-- 에러 응답 형식:
+- 에러 응답 형식 (`error` 는 ErrorCode enum 이름):
 ```json
-{ "code": "401", "message": "unauthorized" }
+{ "code": "401", "error": "UNAUTHORIZED", "message": "unauthorized" }
 ```
+- 목록 응답은 커서 페이징, 시각은 ISO-8601 + 오프셋 (위 "앱 출시 전제 API 규약")
 
 ---
 
@@ -360,17 +401,20 @@ com.mockinvestment.{server}
 - [x] 설계 개선 확정 (BCrypt, AES-GCM, ZSET 오더북, Kafka, WebSocket 푸시, 모니터링)
 - [x] DB 스키마 설계 및 생성 (Flyway)
 - [x] 로컬 개발 인프라 (docker-compose: MySQL + Redis, .env)
-- [ ] 사용자 인증 구현
+- [x] 회원가입 API (BCrypt, 투자 성향, 현금 계좌 자동 개설)
+- [ ] 로그인 / 토큰 재발급 / 로그아웃·기기 관리 / 회원 탈퇴
+- [ ] 앱 출시 전제 API 규약 적용 (error 필드, ISO-8601, 커서 페이징, OpenAPI)
 - [ ] 현금/증권 계좌 구현
-- [ ] KIS API 연동
+- [ ] 시세 공급자 추상화 (MarketDataProvider) + KIS 연동 + 공공데이터 DAILY 모드
 - [ ] 거래 체결 엔진 구현
 - [ ] Kafka 체결 이벤트 연동
 - [ ] AI 분석 기능 구현 (패턴 분석 + FDS)
-- [ ] React 프론트엔드 구현
+- [ ] Expo(React Native + Web) 프론트엔드 구현
 - [ ] 실시간 알림 (WebSocket)
 - [ ] Docker Compose 배포 환경 구성
 - [ ] 모니터링 (Prometheus + Grafana)
 - [ ] 부하 테스트 및 성능 최적화 (nGrinder)
+- [ ] 출시 준비: 코스콤 시세 라이선스, 개인정보처리방침, 비밀번호 재설정, 스토어 심사 체크리스트
 
 ---
 
