@@ -1,0 +1,52 @@
+# ============================================================
+# MOA 로컬 개발 인프라 (이슈 #7)
+#   docker compose up -d      → MySQL 8.4 + Redis 7 기동
+#   docker compose ps         → healthy 확인
+#   docker compose down       → 종료 (데이터 유지)
+#   docker compose down -v    → 종료 + 데이터 삭제 (스키마 초기화가 필요할 때)
+#
+# 값은 같은 폴더의 .env 에서 읽는다 (.env.example 참고, .env 는 git 제외)
+# Kafka / Prometheus / Grafana 는 해당 기능 구현 시 추가한다.
+# ============================================================
+
+services:
+  mysql:
+    image: mysql:8.4.0
+    container_name: moa-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: moa_security          # 최초 기동 시 자동 생성 (테이블은 Flyway가 만든다)
+      MYSQL_USER: ${DB_USERNAME}            # 애플리케이션 계정 (moa_security 권한 자동 부여)
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      TZ: Asia/Seoul
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
+
+  redis:
+    image: redis:7-alpine
+    container_name: moa-redis
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]   # 재시작해도 오더북 데이터 유지
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 6
+
+volumes:
+  mysql-data:
+  redis-data:
