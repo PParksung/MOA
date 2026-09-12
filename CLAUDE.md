@@ -31,6 +31,8 @@
 - MySQL: 8.4.0
 - Node.js: v22.14.0
 - Docker: 28.0.1
+- 로컬 인프라: 루트 `docker-compose.yml` (MySQL 8.4 + Redis 7). 환경변수는 `.env` (템플릿 `.env.example`, git 제외). 실행 절차는 README.md "로컬 실행" 참고
+- 주의: brew 로 설치된 mysql / redis / httpd 가 3306 / 6379 / 8080 을 선점하므로 `brew services stop` 후 기동
 - OS: macOS (Apple Silicon)
 
 ---
@@ -356,7 +358,8 @@ com.mockinvestment.{server}
 - [x] CONTRIBUTING.md 작성 (개발 규칙 문서화)
 - [x] Spring Boot 프로젝트 생성 (5개 서버)
 - [x] 설계 개선 확정 (BCrypt, AES-GCM, ZSET 오더북, Kafka, WebSocket 푸시, 모니터링)
-- [ ] DB 스키마 설계 및 생성 (Flyway)
+- [x] DB 스키마 설계 및 생성 (Flyway)
+- [x] 로컬 개발 인프라 (docker-compose: MySQL + Redis, .env)
 - [ ] 사용자 인증 구현
 - [ ] 현금/증권 계좌 구현
 - [ ] KIS API 연동
